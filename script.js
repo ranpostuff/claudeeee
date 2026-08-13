@@ -12,7 +12,6 @@ import {
     push,
     onValue,
     runTransaction,
-    remove
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 /* ==========================================================================
@@ -636,12 +635,14 @@ async function clearAllIncidentLogs() {
     if (!confirmed) return;
 
     try {
-        await remove(incidentsRootRef);
+        await set(incidentsRootRef, null);
 
+        selectedIncidentId = null;
         resolveSelectionKey = null;
 
         console.log("All incident logs have been cleared.");
         alert("All incident logs have been cleared successfully.");
+
     } catch (error) {
         console.error("Failed to clear incident logs:", error);
         alert("Failed to clear incident logs. Check the console for details.");
