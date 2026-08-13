@@ -793,6 +793,37 @@ html, body.eoc-dashboard-body {
     font-weight: 700;
     color: var(--text-primary);
 }
+
+.resolve-reason-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.resolve-reason-field label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.resolve-reason-field textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 60px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.6rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    background: var(--bg-card);
+}
+
+.resolve-reason-field textarea:focus {
+    outline: none;
+    border-color: var(--accent-pink);
+    box-shadow: 0 0 0 2px var(--accent-pink-soft);
+}
 .btn-clear-incidents {
     padding: 0.6rem 0.9rem;
     border: 1px solid var(--status-emergency);
