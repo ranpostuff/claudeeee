@@ -11,7 +11,8 @@ import {
     update,
     push,
     onValue,
-    runTransaction
+    runTransaction,
+    remove
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 /* ==========================================================================
@@ -150,11 +151,13 @@ const SCHOOL_FACILITIES = [
 ];
 
 /* ==========================================================================
-   PAGE INITIALIZATION
+   PAGE IN/* ==========================================================================
+   INITIALIZATION
 ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     initializeDashboard();
 });
+
 
 function initializeDashboard() {
     buildCampusMap();
@@ -167,6 +170,13 @@ function initializeDashboard() {
     setupNavigation();
     setupIncidentViewControls();
     updateStatistics();
+
+    // Clear All Incident Logs button
+    const clearIncidentButton = document.getElementById("btn-clear-all-incidents");
+
+    if (clearIncidentButton) {
+        clearIncidentButton.addEventListener("click", clearAllIncidentLogs);
+    }
 }
 
 /* ==========================================================================
@@ -608,7 +618,35 @@ function formatDateTime(epochMs) {
         timeZone: "Asia/Manila"
     });
 }
+/* ==========================================================================
+   INCIDENT LOG — detail / timeline rendering
+   The "timeline" is derived purely from the two stored timestamps
+   (timestamp, resolvedAt) — nothing extra is stored in Firebase for it.
+========================================================================== */
 
+// Put it HERE
+
+async function clearAllIncidentLogs() {
+    const confirmed = window.confirm(
+        "CLEAR ALL INCIDENT LOGS?\n\n" +
+        "This will permanently delete every recorded incident from Firebase.\n\n" +
+        "This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        await remove(incidentsRootRef);
+
+        resolveSelectionKey = null;
+
+        console.log("All incident logs have been cleared.");
+        alert("All incident logs have been cleared successfully.");
+    } catch (error) {
+        console.error("Failed to clear incident logs:", error);
+        alert("Failed to clear incident logs. Check the console for details.");
+    }
+}
 /* ==========================================================================
    ROOM MODAL SYSTEM
 ========================================================================== */
