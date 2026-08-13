@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescuePriority - Emergency Operations Center (MCNHS)</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="eoc-dashboard-body">
+
+    <div class="dashboard-wrapper">
+        <!-- TOP HEADER / PRIMARY NAVIGATION -->
+        <header class="dashboard-header">
+            <div class="header-brand" id="brand-nav-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+                <div class="brand-text">
+                    <h1>RESCUEPRIORITY</h1>
+                    <p>MCNHS Emergency Operations Center</p>
+                </div>
+                <span class="nav-caret" aria-hidden="true"></span>
+
+                <!-- Navigation dropdown -->
+                <nav class="brand-nav-menu hidden" id="brand-nav-menu">
+                    <button type="button" class="nav-menu-item active" data-view="dashboard-view">Dashboard</button>
+                    <button type="button" class="nav-menu-item" data-view="incident-log-view">Incident Log</button>
+                </nav>
+            </div>
+
+            <div class="header-clock">
+                <span class="time-text" id="live-time">00:00:00 AM</span>
+                <span class="date-text" id="live-date">Loading date...</span>
+            </div>
+        </header>
+
+        <!-- ============================= DASHBOARD VIEW ============================= -->
+        <div id="dashboard-view" class="app-view">
+
+            <!-- METRICS SUMMARY BAR -->
+            <section class="metrics-overview">
+                <div class="metric-card">
+                    <span class="metric-label">Total Facilities</span>
+                    <span class="metric-value" id="stat-total">0</span>
+                </div>
+                <div class="metric-card card-safe">
+                    <span class="metric-label">Safe Areas</span>
+                    <span class="metric-value" id="stat-safe">0</span>
+                </div>
+                <div class="metric-card card-alert">
+                    <span class="metric-label">Active Emergencies</span>
+                    <span class="metric-value" id="stat-alerts">0</span>
+                </div>
+                <div class="metric-card card-offline">
+                    <span class="metric-label">Offline Devices</span>
+                    <span class="metric-value" id="stat-offline">0</span>
+                </div>
+            </section>
+
+            <!-- MAIN INTERACTIVE SCHOOL MAP -->
+            <main class="school-map-section">
+                <div class="section-header">
+                    <h2>Interactive Campus Blueprint Layout</h2>
+                    <div class="header-controls">
+                        <button type="button" id="btn-trigger-test" class="btn-test-alert">Trigger Test Alert</button>
+                    </div>
+                </div>
+
+                <!-- CAMPUS BLUEPRINT CONTAINER -->
+                <div class="blueprint-container" id="campus-blueprint">
+
+                    <!-- TOP WING -->
+                    <div class="wing wing-top" id="wing-top"></div>
+
+                    <!-- MIDDLE SECTION -->
+                    <div class="blueprint-middle">
+                        <div class="wing wing-left" id="wing-left"></div>
+
+                        <div class="courtyard-area">
+                            <!-- SHS BUILDING BLOCK 1 -->
+                            <div class="shs-cluster" id="shs-block-1">
+                                <div class="shs-tier-label">SHS BUILDING 1</div>
+                                <div class="shs-tier" id="shs1-tier-1"></div>
+                                <div class="shs-tier" id="shs1-tier-2"></div>
+                            </div>
+
+                            <!-- SHS BUILDING BLOCK 2 -->
+                            <div class="shs-cluster" id="shs-block-2">
+                                <div class="shs-tier-label">SHS BUILDING 2</div>
+                                <div class="shs-tier" id="shs2-tier-1"></div>
+                                <div class="shs-tier" id="shs2-tier-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="wing wing-right" id="wing-right"></div>
+                    </div>
+
+                    <!-- BOTTOM WING / BLOCK -->
+                    <div class="wing wing-bottom" id="wing-bottom"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ============================= INCIDENT LOG VIEW ============================= -->
+        <div id="incident-log-view" class="app-view hidden">
+
+            <!-- INCIDENT LIST PANEL -->
+            <section class="incident-log-section" id="incident-list-panel">
+                <div class="section-header">
+                    <div>
+                        <h2>Incident Log</h2>
+                        <p class="section-subtitle">Emergency and facility event history</p>
+                    </div>
+                </div>
+
+                <div id="incident-folder-list" class="incident-folder-list">
+                    <div class="empty-incident-state">No recorded incidents yet. System operating normally.</div>
+                </div>
+            </section>
+
+            <!-- INCIDENT DETAIL / TIMELINE PANEL -->
+            <section class="incident-detail-section hidden" id="incident-detail-panel">
+                <button type="button" class="btn-back-to-list" id="btn-back-to-incidents">&larr; Back to Incident Log</button>
+
+                <div class="incident-detail-head">
+                    <h2 id="incident-detail-title">Emergency #000</h2>
+                    <span id="incident-detail-status-badge" class="status-pill">Resolved</span>
+                </div>
+
+                <div class="incident-detail-meta">
+                    <div>
+                        <span class="meta-label">Classroom</span>
+                        <span class="meta-value" id="incident-detail-facility">--</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">Triggered</span>
+                        <span class="meta-value" id="incident-detail-triggered">--</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">Status</span>
+                        <span class="meta-value" id="incident-detail-status-text">--</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">Resolved At</span>
+                        <span class="meta-value" id="incident-detail-resolved">--</span>
+                    </div>
+                </div>
+
+                <div class="incident-timeline-wrapper">
+                    <h3 class="timeline-heading">Timeline</h3>
+                    <ol class="incident-timeline" id="incident-timeline-list"></ol>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL -->
+    <div id="room-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="modal-close">&times;</button>
+
+            <div class="modal-header">
+                <h2 id="modal-room-title">Facility Details</h2>
+                <span id="modal-status-badge" class="modal-badge">Safe</span>
+            </div>
+
+            <!-- Live Feed Preview Box -->
+            <div id="modal-image-container" class="preview-box"></div>
+
+            <!-- Details List -->
+            <div class="modal-details-grid">
+                <p><strong>Wing/Zone:</strong> <span id="modal-zone">--</span></p>
+                <p><strong>Adviser/Officer:</strong> <span id="modal-adviser">--</span></p>
+                <p><strong>Section/Role:</strong> <span id="modal-section">--</span></p>
+                <p><strong>Priority Level:</strong> <span id="modal-priority">--</span></p>
+                <p><strong>Emergency Status:</strong> <span id="modal-type">--</span></p>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="modal-actions">
+                <button type="button" id="btn-acknowledge" class="btn btn-ack" disabled>Acknowledge Siren</button>
+                <button type="button" id="btn-resolve" class="btn btn-resolve" disabled>Clear Emergency</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESOLVE EMERGENCY — SELECTION MODAL (new) -->
+    <div id="resolve-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="resolve-modal-close">&times;</button>
+
+            <div class="modal-header">
+                <h2>Resolve Emergency</h2>
+            </div>
+
+            <p class="resolve-modal-subtitle">Which emergency would you like to resolve?</p>
+
+            <div id="resolve-options-list" class="resolve-options-list"></div>
+
+            <div class="modal-actions">
+                <button type="button" id="btn-resolve-cancel" class="btn btn-ack">Cancel</button>
+                <button type="button" id="btn-resolve-confirm" class="btn btn-resolve" disabled>Resolve</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
