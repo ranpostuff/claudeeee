@@ -877,13 +877,17 @@ function updateRoomStatus(facilityId, status) {
     if (!card) return;
 
     const badge = card.querySelector(".room-status-badge");
-    card.classList.remove("status-safe", "status-threat", "status-medical", "status-suspicious");
+    card.classList.remove("status-safe", "status-threat", "status-medical", "status-suspicious", "emergency-active");
 
     if (status === "SAFE") {
         card.classList.add("status-safe");
         if (badge) badge.textContent = "SAFE";
     } else if (status === "THREAT") {
-        card.classList.add("status-threat");
+        // "emergency-active" drives the pink glow/pulse defined in style.css.
+        // It is applied purely because classrooms/{facilityId}/emergency is
+        // true right now — never hard-coded to a particular facility — and
+        // is removed the instant that value flips back to false.
+        card.classList.add("status-threat", "emergency-active");
         if (badge) badge.textContent = "EMERGENCY";
     }
 }
