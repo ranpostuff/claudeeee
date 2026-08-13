@@ -12,6 +12,8 @@ import {
     push,
     onValue,
     runTransaction,
+    get,
+    remove
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 /* ==========================================================================
@@ -623,7 +625,11 @@ function formatDateTime(epochMs) {
    (timestamp, resolvedAt) — nothing extra is stored in Firebase for it.
 ========================================================================== */
 
-// Put it HERE
+/* ==========================================================================
+   INCIDENT LOG — detail / timeline rendering
+   The "timeline" is derived purely from the two stored timestamps
+   (timestamp, resolvedAt) — nothing extra is stored in Firebase for it.
+========================================================================== */
 
 async function clearAllIncidentLogs() {
     const confirmed = window.confirm(
@@ -635,8 +641,25 @@ async function clearAllIncidentLogs() {
     if (!confirmed) return;
 
     try {
-        await set(incidentsRootRef, null);
+        // Get all incidents currently stored in Firebase
+        const snapshot = await get(incidentsRootRef);
 
+        if (!snapshot.exists()) {
+            alert("There are no incident logs to clear.");
+            return;
+        }
+
+        const incidentsData = snapshot.val();
+
+        // Delete each incident individually
+        // This works with your current Firebase Rules
+        const deletePromises = Object.keys(incidentsData).map((incidentKey) => {
+            return remove(ref(database, `incidents/${incidentKey}`));
+        });
+
+        await Promise.all(deletePromises);
+
+        // Clear selected incident in the dashboard
         selectedIncidentId = null;
         resolveSelectionKey = null;
 
