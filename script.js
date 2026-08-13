@@ -277,46 +277,60 @@ function setupClock() {
    know which rooms are currently flagged.
 ========================================================================== */
 function setupClassroomsListener() {
-    onValue(classroomsRootRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        classroomsState = data;
+    onValue(
+        classroomsRootRef,
+        (snapshot) => {
+            const data = snapshot.val() || {};
+            classroomsState = data;
 
-        SCHOOL_FACILITIES.forEach(facility => {
-            const entry = classroomsState[facility.id];
-            const isActive = !!(entry && entry.emergency);
-            updateRoomStatus(facility.id, isActive ? "THREAT" : "SAFE");
-        });
+            SCHOOL_FACILITIES.forEach(facility => {
+                const entry = classroomsState[facility.id];
+                const isActive = !!(entry && entry.emergency);
+                updateRoomStatus(facility.id, isActive ? "THREAT" : "SAFE");
+            });
 
-        updateStatistics();
+            updateStatistics();
 
-        // Keep an open room modal's buttons in sync if that room's state changed
-        if (selectedFacilityId) {
-            refreshModalButtonsForFacility(selectedFacilityId);
+            // Keep an open room modal's buttons in sync if that room's state changed
+            if (selectedFacilityId) {
+                refreshModalButtonsForFacility(selectedFacilityId);
+            }
+        },
+        (error) => {
+            // Surface Firebase read errors (e.g. permission/rules issues)
+            // instead of leaving the map silently frozen.
+            console.error("[classrooms listener] Firebase read failed:", error.code, error.message);
         }
-    });
+    );
 }
 
 /* ==========================================================================
    FIREBASE LISTENER — incidents/ (HISTORICAL, permanent)
 ========================================================================== */
 function setupIncidentsListener() {
-    onValue(incidentsRootRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        incidents = Object.keys(data).map(key => ({ key, ...data[key] }));
+    onValue(
+        incidentsRootRef,
+        (snapshot) => {
+            const data = snapshot.val() || {};
+            incidents = Object.keys(data).map(key => ({ key, ...data[key] }));
 
-        renderIncidentFolderList();
+            renderIncidentFolderList();
 
-        if (selectedIncidentId !== null) {
-            const current = incidents.find(inc => inc.key === selectedIncidentId);
-            if (current) renderIncidentDetail(current);
+            if (selectedIncidentId !== null) {
+                const current = incidents.find(inc => inc.key === selectedIncidentId);
+                if (current) renderIncidentDetail(current);
+            }
+
+            // Keep the Resolve Emergency modal's list live if it's open
+            const resolveModal = document.getElementById("resolve-modal");
+            if (resolveModal && !resolveModal.classList.contains("hidden")) {
+                renderResolveOptions();
+            }
+        },
+        (error) => {
+            console.error("[incidents listener] Firebase read failed:", error.code, error.message);
         }
-
-        // Keep the Resolve Emergency modal's list live if it's open
-        const resolveModal = document.getElementById("resolve-modal");
-        if (resolveModal && !resolveModal.classList.contains("hidden")) {
-            renderResolveOptions();
-        }
-    });
+    );
 }
 
 /* ==========================================================================
@@ -396,16 +410,26 @@ async function raiseClassroomEmergency(facility) {
 /* ==========================================================================
    RESOLVE A SPECIFIC INCIDENT (selected by the user)
 ========================================================================== */
-async function resolveIncidentByKey(incidentKey) {
+async function resolveIncidentByKey(incidentKey, resolutionReason) {
     const incident = incidents.find(inc => inc.key === incidentKey);
     if (!incident || incident.status !== "Active") return;
 
     const now = Date.now();
 
-    await update(ref(database, `incidents/${incidentKey}`), {
+    const trimmedReason = (resolutionReason || "").trim();
+
+    const resolutionUpdate = {
         status: "Resolved",
         resolvedAt: now
-    });
+    };
+
+    // resolutionReason is optional in the Firebase rules — only send it
+    // when the user actually typed something, so we don't write empty strings.
+    if (trimmedReason.length > 0) {
+        resolutionUpdate.resolutionReason = trimmedReason;
+    }
+
+    await update(ref(database, `incidents/${incidentKey}`), resolutionUpdate);
 
     // Find which classroom this incident belongs to (by matching activeIncidentKey)
     // and clear its current-state flag.
@@ -585,7 +609,10 @@ function renderIncidentDetail(incident) {
             { timestamp: incident.timestamp, type: "triggered", message: "Emergency triggered" }
         ];
         if (incident.resolvedAt) {
-            events.push({ timestamp: incident.resolvedAt, type: "resolved", message: "Emergency resolved" });
+            const resolvedMessage = incident.resolutionReason
+                ? `Emergency resolved — ${incident.resolutionReason}`
+                : "Emergency resolved";
+            events.push({ timestamp: incident.resolvedAt, type: "resolved", message: resolvedMessage });
         }
 
         events.forEach(event => {
@@ -807,10 +834,12 @@ function setupResolveModal() {
             if (confirmButton.disabled || !resolveSelectionKey) return;
             confirmButton.disabled = true;
             try {
-                await resolveIncidentByKey(resolveSelectionKey);
+                const reasonInput = document.getElementById("resolve-reason-input");
+                const reason = reasonInput ? reasonInput.value : "";
+                await resolveIncidentByKey(resolveSelectionKey, reason);
                 closeResolveModal();
             } catch (error) {
-                console.error(error);
+                console.error("Failed to resolve incident:", error);
                 confirmButton.disabled = false;
             }
         });
@@ -820,12 +849,20 @@ function setupResolveModal() {
 function openResolveModal() {
     resolveSelectionKey = null;
     renderResolveOptions();
+
+    const reasonInput = document.getElementById("resolve-reason-input");
+    if (reasonInput) reasonInput.value = "";
+
     const modal = document.getElementById("resolve-modal");
     if (modal) modal.classList.remove("hidden");
 }
 
 function closeResolveModal() {
     resolveSelectionKey = null;
+
+    const reasonInput = document.getElementById("resolve-reason-input");
+    if (reasonInput) reasonInput.value = "";
+
     const modal = document.getElementById("resolve-modal");
     if (modal) modal.classList.add("hidden");
 }
