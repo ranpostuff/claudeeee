@@ -107,19 +107,32 @@
         <!-- ============================= INCIDENT LOG VIEW ============================= -->
         <div id="incident-log-view" class="app-view hidden">
 
-            <!-- INCIDENT LIST PANEL -->
-            <section class="incident-log-section" id="incident-list-panel">
-                <div class="section-header">
-                    <div>
-                        <h2>Incident Log</h2>
-                        <p class="section-subtitle">Emergency and facility event history</p>
-                    </div>
-                </div>
+<!-- INCIDENT LIST PANEL -->
+<section class="incident-log-section" id="incident-list-panel">
 
-                <div id="incident-folder-list" class="incident-folder-list">
-                    <div class="empty-incident-state">No recorded incidents yet. System operating normally.</div>
-                </div>
-            </section>
+    <div class="section-header">
+        <div>
+            <h2>Incident Log</h2>
+            <p class="section-subtitle">
+                Emergency and facility event history
+            </p>
+        </div>
+
+        <button
+            type="button"
+            id="btn-clear-all-incidents"
+            class="btn-clear-incidents">
+            Clear All Incident Logs
+        </button>
+    </div>
+
+    <div id="incident-folder-list" class="incident-folder-list">
+        <div class="empty-incident-state">
+            No recorded incidents yet. System operating normally.
+        </div>
+    </div>
+
+</section>
 
             <!-- INCIDENT DETAIL / TIMELINE PANEL -->
             <section class="incident-detail-section hidden" id="incident-detail-panel">
